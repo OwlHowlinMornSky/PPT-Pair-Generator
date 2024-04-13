@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Policy;
 using Microsoft.Office.Core;
-using Microsoft.Office.Interop.PowerPoint;
 using PPT = Microsoft.Office.Interop.PowerPoint;
 
 namespace PairGenLibrary {
@@ -110,6 +108,15 @@ namespace PairGenLibrary {
 						var oldShape = oldMasterShapes[j];
 						shape.Left = oldShape.Item1;
 						shape.Width = oldShape.Item2;
+
+						// 复制一份，同时清空文本
+						var range = shape.Duplicate();
+						range.Left = shape.Left + oldWidth;
+						range.Top = shape.Top;
+						if (range.TextFrame.HasText == MsoTriState.msoTrue)
+							range.TextFrame.TextRange.Text = "";
+						if (range.TextFrame2.HasText == MsoTriState.msoTrue)
+							range.TextFrame2.TextRange.Text = "";
 					}
 				}
 				// 还原母版子项...
@@ -121,8 +128,18 @@ namespace PairGenLibrary {
 						var oldShape = layoutShapes[j];
 						shape.Left = oldShape.Item1;
 						shape.Width = oldShape.Item2;
+
+						// 复制一份，同时清空文本
+						var range = shape.Duplicate();
+						range.Left = shape.Left + oldWidth;
+						range.Top = shape.Top;
+						if (range.TextFrame.HasText == MsoTriState.msoTrue)
+							range.TextFrame.TextRange.Text = "";
+						if (range.TextFrame2.HasText == MsoTriState.msoTrue)
+							range.TextFrame2.TextRange.Text = "";
 					}
 				}
+
 				// 还原母版完成
 				RatioSum += WriteMasterRatio;
 				ProgressBarUpdate(RatioSum);
@@ -139,6 +156,7 @@ namespace PairGenLibrary {
 						shape.Left = oldShape.Item1;
 						shape.Width = oldShape.Item2;
 
+						// 复制一份
 						var range = shape.Duplicate();
 						range.Left = shape.Left + oldWidth;
 						range.Top = shape.Top;

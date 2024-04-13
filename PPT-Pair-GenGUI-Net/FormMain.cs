@@ -1,5 +1,4 @@
 ﻿using PairGenLibrary;
-using System.Windows.Forms;
 
 namespace PPT_Pair_GenGUI_Net {
 	public partial class FormMain : Form {
