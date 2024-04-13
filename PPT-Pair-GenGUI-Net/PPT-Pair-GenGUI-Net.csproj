@@ -9,7 +9,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Platforms>x64</Platforms>
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	<AssemblyName>PPairGen</AssemblyName>
+	<ApplicationIcon>OHMS.ico</ApplicationIcon>
+	<Version>1.0.0</Version>
+	<Title>$(AssemblyName)</Title>
+	<Authors>Tyler Parret True (OHMS)</Authors>
+	<Company>OHMS</Company>
+	<Product>$(SolutionName)-$(AssemblyName)</Product>
+	<Description>PPT Pair Generator</Description>
+	<Copyright>Copyright © 2024 Tyler Parret True (OHMS) </Copyright>
+	<AssemblyVersion>1.0.0.1</AssemblyVersion>
+	<FileVersion>1.0.0.1</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="OHMS.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PairGenLibrary\PairGenLibrary.csproj" />
