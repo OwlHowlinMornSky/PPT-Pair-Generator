@@ -120,8 +120,14 @@
   <data name="Processing" xml:space="preserve">
     <value>正在处理第{0}/{1}个文件的第{2}/{3}页</value>
   </data>
+  <data name="ProcessingMaster" xml:space="preserve">
+    <value>正在处理第{0}/{1}个文件的母版</value>
+  </data>
   <data name="Reading" xml:space="preserve">
     <value>正在读取第{0}/{1}个文件的第{2}/{3}页</value>
+  </data>
+  <data name="ReadingMaster" xml:space="preserve">
+    <value>正在读取第{0}/{1}个文件的母版</value>
   </data>
   <data name="Ready" xml:space="preserve">
     <value>就绪</value>

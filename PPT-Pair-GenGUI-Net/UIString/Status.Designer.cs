@@ -70,11 +70,29 @@ namespace PPT_Pair_GenGUI_Net.UIString {
         }
         
         /// <summary>
+        ///   查找类似 正在处理第{0}/{1}个文件的母版 的本地化字符串。
+        /// </summary>
+        internal static string ProcessingMaster {
+            get {
+                return ResourceManager.GetString("ProcessingMaster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 正在读取第{0}/{1}个文件的第{2}/{3}页 的本地化字符串。
         /// </summary>
         internal static string Reading {
             get {
                 return ResourceManager.GetString("Reading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 正在读取第{0}/{1}个文件的母版 的本地化字符串。
+        /// </summary>
+        internal static string ReadingMaster {
+            get {
+                return ResourceManager.GetString("ReadingMaster", resourceCulture);
             }
         }
         

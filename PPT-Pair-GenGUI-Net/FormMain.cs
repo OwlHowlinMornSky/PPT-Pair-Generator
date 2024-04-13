@@ -44,15 +44,25 @@ namespace PPT_Pair_GenGUI_Net {
 		private void ProcessFiles(List<string> filePath) {
 			int filei = 0, filen = filePath.Count;
 			GenCore.ProgressBarUpdate = (float val) => {
+				if (val > 100.0f)
+					val = 100.0f;
 				UpdateProgressBar(Convert.ToInt32((val + filei * 100.0f) / filen));
 			};
-			GenCore.StatusStripUpdate = (bool t, int pi, int pn) => {
-				UpdateStatusStrip(
-					string.Format(
-						t ? UIString.Status.Processing : UIString.Status.Reading,
-						filei + 1, filen, pi, pn
-					)
-				);
+			GenCore.StatusStripUpdate = (int t, int pi, int pn) => {
+				switch (t) {
+				case 0:
+					UpdateStatusStrip(string.Format(UIString.Status.Reading, filei + 1, filen, pi, pn));
+					break;
+				case 1:
+					UpdateStatusStrip(string.Format(UIString.Status.Processing, filei + 1, filen, pi, pn));
+					break;
+				case 2:
+					UpdateStatusStrip(string.Format(UIString.Status.ReadingMaster, filei + 1, filen));
+					break;
+				case 3:
+					UpdateStatusStrip(string.Format(UIString.Status.ProcessingMaster, filei + 1, filen));
+					break;
+				};
 			};
 			UpdateGuiTopMost(true);
 			foreach (string file in filePath) {

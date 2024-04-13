@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Policy;
 using Microsoft.Office.Core;
+using Microsoft.Office.Interop.PowerPoint;
 using PPT = Microsoft.Office.Interop.PowerPoint;
 
 namespace PairGenLibrary {
 	public static class GenCore {
 
-		public static Action<bool, int, int> StatusStripUpdate = (bool t, int x, int y) => { };
+		public static Action<int, int, int> StatusStripUpdate = (int t, int x, int y) => { };
 		public static Action<float> ProgressBarUpdate = (float x) => { };
 
 		public static bool DoGen(string filePath, out string errorStr) {
 			float RatioSum = 0.0f;
 			const float OpenRatio = 5.0f;
 			const float ReadOldShapeInfoTotalRatio = 20.0f;
+			const float ReadMasterRatio = 5.0f;
 			const float ResizeRatio = 5.0f;
-			const float WriteShapeTotalRatio = 60.0f;
+			const float WriteMasterRatio = 5.0f;
+			const float WriteShapeTotalRatio = 55.0f;
 			float ReadRatio = 0.0f;
 			float WriteRatio = 0.0f;
 			try {
@@ -28,17 +32,22 @@ namespace PairGenLibrary {
 
 				// 打开一个演示文稿文件
 				var pre = pptApp.Presentations.Open(filePath);
-
-				RatioSum += OpenRatio; // 已经打开
+				// 已经打开
+				RatioSum += OpenRatio;
 				ProgressBarUpdate(RatioSum);
 
+				// 保存所有幻灯片的所有图形的旧位置参数 的变量
 				List<List<Tuple<float, float>>> oldShapes = new List<List<Tuple<float, float>>>();
 
+				// 根据幻灯片数量和图形数量决定progress增量
 				ReadRatio = ReadOldShapeInfoTotalRatio / pre.Slides.Count;
 				WriteRatio = WriteShapeTotalRatio / pre.Slides.Count;
 
+				// 保存所有幻灯片的所有图形的旧位置参数
 				for (int i = 0, n = pre.Slides.Count; i < n; i++) {
-					StatusStripUpdate(false, i + 1, n); // 开始读取一页
+					// 开始读取一页
+					StatusStripUpdate(0, i + 1, n);
+
 					var slide = pre.Slides[i + 1];
 					var slideShapes = new List<Tuple<float, float>>();
 					for (int j = 0, m = slide.Shapes.Count; j < m; j++) {
@@ -46,21 +55,82 @@ namespace PairGenLibrary {
 						slideShapes.Add(new Tuple<float, float>(shape.Left, shape.Width));
 					}
 					oldShapes.Add(slideShapes);
-					RatioSum += ReadRatio; // 读完一页
+
+					// 读完一页
+					RatioSum += ReadRatio;
 					ProgressBarUpdate(RatioSum);
 				}
-				RatioSum = OpenRatio + ReadOldShapeInfoTotalRatio; // 读取完成
+				// 读取完成
+				RatioSum = OpenRatio + ReadOldShapeInfoTotalRatio;
 				ProgressBarUpdate(RatioSum);
 
+				// 保存幻灯片母版的图形的旧位置参数 的变量
+				List<Tuple<float, float>> oldMasterShapes = new List<Tuple<float, float>>();
+				// 保存母版子项...
+				List<List<Tuple<float, float>>> oldMasterLayoutShapes = new List<List<Tuple<float, float>>>();
+
+				// 开始读取母版
+				StatusStripUpdate(2, 0, 0);
+				// 保存幻灯片母版的图形的旧位置参数
+				{
+					var master = pre.SlideMaster;
+					for (int j = 0, m = master.Shapes.Count; j < m; j++) {
+						var shape = master.Shapes[j + 1];
+						oldMasterShapes.Add(new Tuple<float, float>(shape.Left, shape.Width));
+					}
+				}
+				// 保存母版子项...
+				for (int i = 0, n = pre.SlideMaster.CustomLayouts.Count; i < n; i++) {
+					var layout = pre.SlideMaster.CustomLayouts[i + 1];
+					var layoutShapes = new List<Tuple<float, float>>();
+					for (int j = 0, m = layout.Shapes.Count; j < m; j++) {
+						var shape = layout.Shapes[j + 1];
+						layoutShapes.Add(new Tuple<float, float>(shape.Left, shape.Width));
+					}
+					oldMasterLayoutShapes.Add(layoutShapes);
+				}
+				// 保存母版完成
+				RatioSum += ReadMasterRatio;
+				ProgressBarUpdate(RatioSum);
+
+				// 宽度变为2倍
 				float oldWidth = pre.PageSetup.SlideWidth;
-				//float halfOldWidth = oldWidth / 2.0f;
 				pre.PageSetup.SlideWidth *= 2.0f;
-
-				RatioSum += ResizeRatio; // 扩大完成
+				// 扩大完成
+				RatioSum += ResizeRatio;
 				ProgressBarUpdate(RatioSum);
 
+				// 开始还原母版
+				StatusStripUpdate(3, 0, 0);
+				// 还原幻灯片母版的图形的旧位置参数
+				{
+					var master = pre.SlideMaster;
+					for (int j = 0, m = master.Shapes.Count; j < m; j++) {
+						var shape = master.Shapes[j + 1];
+						var oldShape = oldMasterShapes[j];
+						shape.Left = oldShape.Item1;
+						shape.Width = oldShape.Item2;
+					}
+				}
+				// 还原母版子项...
+				for (int i = 0, n = pre.SlideMaster.CustomLayouts.Count; i < n; i++) {
+					var layout = pre.SlideMaster.CustomLayouts[i + 1];
+					var layoutShapes = oldMasterLayoutShapes[i];
+					for (int j = 0, m = layout.Shapes.Count; j < m; j++) {
+						var shape = layout.Shapes[j + 1];
+						var oldShape = layoutShapes[j];
+						shape.Left = oldShape.Item1;
+						shape.Width = oldShape.Item2;
+					}
+				}
+				// 还原母版完成
+				RatioSum += WriteMasterRatio;
+				ProgressBarUpdate(RatioSum);
+
+				// 还原所有幻灯片...
 				for (int i = 0, n = pre.Slides.Count; i < n; i++) {
-					StatusStripUpdate(true, i + 1, n); // 开始修改一页
+					// 开始修改一页
+					StatusStripUpdate(1, i + 1, n);
 					var slide = pre.Slides[i + 1];
 					var slideShapes = oldShapes[i];
 					for (int j = 0, m = slide.Shapes.Count; j < m; j++) {
@@ -73,33 +143,21 @@ namespace PairGenLibrary {
 						range.Left = shape.Left + oldWidth;
 						range.Top = shape.Top;
 					}
-					RatioSum += WriteRatio; // 写完一页
+					// 写完一页
+					RatioSum += WriteRatio;
 					ProgressBarUpdate(RatioSum);
 				}
-				RatioSum = OpenRatio + ReadOldShapeInfoTotalRatio + ResizeRatio + WriteShapeTotalRatio; // 修改完成
+				// 修改完成
+				RatioSum =
+					OpenRatio +
+					ReadOldShapeInfoTotalRatio +
+					ReadMasterRatio +
+					ResizeRatio +
+					WriteMasterRatio +
+					WriteShapeTotalRatio;
 				ProgressBarUpdate(RatioSum);
 
-
-				/*foreach (PPT.Slide slide in pre.Slides) {
-					List<PPT.Shape> add = new List<PPT.Shape>();
-					foreach (PPT.Shape shape in slide.Shapes) {
-
-						if (shape.Left >= halfOldWidth) {
-							shape.Left -= halfOldWidth;
-						}
-						if(shape.Width > oldWidth) {
-							shape.Width /= 2.0f;
-						}
-
-						add.Add(shape);
-					}
-					foreach (PPT.Shape shape in add) {
-						var range = shape.Duplicate();
-						range.Left = shape.Left + oldWidth;
-						range.Top = shape.Top;
-					}
-				}*/
-
+				// 计算新名字
 				string newName =
 					Path.Combine(
 						Path.GetDirectoryName(filePath),
@@ -109,16 +167,16 @@ namespace PairGenLibrary {
 				string exName = Path.GetExtension(filePath);
 
 				// 另存为
-				if(File.Exists(newName + exName)) {
+				if (File.Exists(newName + exName)) {
 					ulong cnt = 0;
-					while(File.Exists(newName + cnt + exName)) {
+					while (File.Exists(newName + cnt + exName)) {
 						cnt++;
 					}
 					newName += cnt;
 				}
 				pre.SaveAs(newName + exName);
-
-				RatioSum = 100.0f; // 保存完成
+				// 保存完成
+				RatioSum = 100.0f;
 				ProgressBarUpdate(RatioSum);
 
 				// 关闭演示文稿文件
