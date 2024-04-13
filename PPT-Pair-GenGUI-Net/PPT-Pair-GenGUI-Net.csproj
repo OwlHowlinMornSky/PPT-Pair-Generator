@@ -20,6 +20,7 @@
 	<Copyright>Copyright © 2024 Tyler Parret True (OHMS) </Copyright>
 	<AssemblyVersion>1.0.0.1</AssemblyVersion>
 	<FileVersion>1.0.0.1</FileVersion>
+	<PackageProjectUrl>https://github.com/OwlHowlinMornSky/PPT-Pair-Generator</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
