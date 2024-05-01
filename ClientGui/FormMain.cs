@@ -107,7 +107,7 @@ namespace PPT_Pair_GenGUI_Net {
 		}
 
 		private async void OpenFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e) {
-			await Task.Run(() => ProcessFiles(openFileDialog1.FileNames.ToList()));
+			await Task.Run(() => ProcessFiles([.. openFileDialog1.FileNames]));
 		}
 	}
 }
