@@ -4,6 +4,14 @@
  
  Make every slide a pair.
 
+## 许可 License
+
+GNU AFFERO GENERAL PUBLIC LICENSE - Version 3
+
+This software is a [Free/Libre Software](https://www.gnu.org/philosophy/free-sw.en.html).
+
+本软件 是 [自由软件](https://www.gnu.org/philosophy/free-sw.html)。
+
 ## 作用  Effect
 
 让每一张幻灯片都变成左右对照的形式。如下面的`图0`到`图1`.
